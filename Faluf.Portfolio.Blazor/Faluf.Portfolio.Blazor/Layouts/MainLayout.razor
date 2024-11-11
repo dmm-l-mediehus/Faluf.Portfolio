@@ -1,0 +1,43 @@
+﻿@inherits LayoutComponentBase
+
+@inject IStringLocalizer<MainLayout> Localizer
+
+<div class="page">
+	<div class="sidebar sticky-top">
+		<Sidebar />
+	</div>
+
+	<main>
+		<div class="top-row px-4">
+			<AuthorizeView>
+				<span class="me-2"><b>RefreshToken</b>: @context.User.Claims.FirstOrDefault(x => x.Type is "jti")?.Value | </span>
+			</AuthorizeView>
+
+			<span class="me-2"><b>Memory usage</b>: @((GC.GetTotalMemory(false) / 1024.0 / 1024.0).ToString("F2")) MB | </span>
+
+			<span class="me-2"><b>Current RenderMode</b>: @RendererInfo.Name @(RendererInfo.IsInteractive ? new MarkupString("""(<span class="text-success">Interactive</span>)""") : new MarkupString("""(<span class="text-danger">Non-interactive</span>)"""))</span>
+		</div>
+
+		<article class="content p-2 p-lg-3">
+			<SerilogErrorBoundary @ref="errorBoundary">
+				<ChildContent>
+					@Body
+				</ChildContent>
+
+				<ErrorContent>
+					<h1>Oops!</h1>
+
+					<p>@Localizer["ErrorOccurredInApplication", context.HelpLink ?? string.Empty].</p>
+
+					<button class="btn btn-primary" @onclick="errorBoundary.Recover">
+						@Localizer["Recover"]
+					</button>
+				</ErrorContent>
+			</SerilogErrorBoundary>
+		</article>
+	</main>
+</div>
+
+@code {
+	private ErrorBoundary errorBoundary = null!;
+}
